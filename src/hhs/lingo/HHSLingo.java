@@ -3,7 +3,7 @@ package hhs.lingo;
 
 /**
  *
- * @author Falco
+ * @author Falco Strijk
  */
 public class HHSLingo {
 
