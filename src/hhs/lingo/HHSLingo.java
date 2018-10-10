@@ -124,17 +124,16 @@ public class HHSLingo {
     public void VulInWoord(int poging, String woord){ 
         //TODO: Check het woord, is het te lang, te kort en check of er niet gecheat wordt
         // Set er wordt vals gespeelt, dan kan je deze code uitvoeren:
-        // woord = "-----";
-        
-        
-        VulWoordInGui(poging, woord.toLowerCase(), () -> {
+//         woord = "-----";
+
+         // finalWoord is hetzelfde als de ingevoerde woord, maar om dat ik alles in een bestand heb moet ik het zo doen
+        String finalWoord = woord;
+        VulWoordInGui(poging, finalWoord.toLowerCase(), () -> {
             //TODO: Maak jou eigen variant
 //            UpdateStatusText("Dit was poging " + (poging + 1));
-            if(woord.equalsIgnoreCase(hetWoord)){
-                EindSpelWin();
-            }else if(pogingen == 5){
-                EindSpelGeenKansenOver();
-            }
+
+            //TODO: Ook de logica voor eind spel (heeft gebruiker gewonnen of zijn er 5 pogingen geweest)
+//             if(finalWoord == hetWoord){}
         });
     }
     
