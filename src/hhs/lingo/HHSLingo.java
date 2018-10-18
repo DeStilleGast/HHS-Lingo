@@ -1,24 +1,25 @@
-
 package hhs.lingo;
 
-import javax.sound.sampled.*;
-import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.Random;
+import javax.sound.sampled.*;
+import javax.swing.*;
 
 /**
  *
- * @author Falco
+ * @author Falco & Burak
  */
 public class HHSLingo {
 
     private int pogingen = 0; // Hoeveelste poging we zijn
     private final int maxAantalPogingen = 5; // Spel instelling, max aantal pogingen
+   // private boolean MaxAantalPogingen = false;
 
     private JTextField[][] textFields;
     private boolean isSpelActief = true; // Deze boolean gebruiken om te zien of het spel actief is (ervoor zorgen dat het spel niet verder gaat als het spel klaar is (gewonnen/verloren/cheat))
-    
+
     private String hetWoord; // Het woord dat geraden moet worden
 
     private LingoGui lGui; // lGui -> Lingo Gui
@@ -45,54 +46,54 @@ public class HHSLingo {
         // Beter beginnen we al zo veel zonder static, Object Orientated Programming.
     }
 
-    public void run(){
+    public void run() {
         // Alles opzetten
         lGui = new LingoGui();
         lGui.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        
+
         // Textfield matrix
         textFields = new JTextField[5][5];
-        
+
         // Rij 1
         textFields[0][0] = lGui.getTxt11();
         textFields[0][1] = lGui.getTxt12();
         textFields[0][2] = lGui.getTxt13();
         textFields[0][3] = lGui.getTxt14();
         textFields[0][4] = lGui.getTxt15();
-        
+
         // Rij 2
         textFields[1][0] = lGui.getTxt21();
         textFields[1][1] = lGui.getTxt22();
         textFields[1][2] = lGui.getTxt23();
         textFields[1][3] = lGui.getTxt24();
         textFields[1][4] = lGui.getTxt25();
-        
+
         // Rij 3
         textFields[2][0] = lGui.getTxt31();
         textFields[2][1] = lGui.getTxt32();
         textFields[2][2] = lGui.getTxt33();
         textFields[2][3] = lGui.getTxt34();
         textFields[2][4] = lGui.getTxt35();
-        
+
         // Rij 4
         textFields[3][0] = lGui.getTxt41();
         textFields[3][1] = lGui.getTxt42();
         textFields[3][2] = lGui.getTxt43();
         textFields[3][3] = lGui.getTxt44();
         textFields[3][4] = lGui.getTxt45();
-        
+
         // Rij 5
         textFields[4][0] = lGui.getTxt51();
         textFields[4][1] = lGui.getTxt52();
         textFields[4][2] = lGui.getTxt53();
         textFields[4][3] = lGui.getTxt54();
         textFields[4][4] = lGui.getTxt55();
-        
-        
+
         JTextField txtInput = lGui.getTxtInput();
-        txtInput.addActionListener((l) -> { 
-            if(isSpelActief){
-                VulInWoord(pogingen++, txtInput.getText()); // de ++ wordt pas na de functie uitgevoerd !
+        txtInput.addActionListener((l) -> {
+            if (isSpelActief) {
+                VulInWoord(pogingen, txtInput.getText());
+                pogingen = pogingen + 1;
                 txtInput.setText("");
             }
         });
@@ -112,51 +113,64 @@ public class HHSLingo {
         lGui.setVisible(true);
     }
 
-
     // Hier woord het woord uit een array gehaalt en dat woord moet geraden worden
-    public String VerkrijgNieuwWoord(){ 
-        //TODO: Maak het random
-        
-        return "toast";
+    public String VerkrijgNieuwWoord() {
+        String woorden[] = {"dacht", "daten", "flink", "deken", "denkt", "dakje", "haags", "hallo", "hapje", "ramen"};
+        Random rdn = new Random();
+        int randomgetal = rdn.nextInt((woorden.length));
+        return woorden[randomgetal];
     }
-    
-    // Hier kijken we of het woord goed is, zoniet dan komen er streepjes 
-    public void VulInWoord(int poging, String woord){ 
+
+    // Hier kijken we of het woord goed is, zoniet dan komen er streepjes
+    public void VulInWoord(int poging, String woorden) {
+
         //TODO: Check het woord, is het te lang, te kort en check of er niet gecheat wordt
         // Set er wordt vals gespeelt, dan kan je deze code uitvoeren:
 //         woord = "-----";
 
-         // finalWoord is hetzelfde als de ingevoerde woord, maar om dat ik alles in een bestand heb moet ik het zo doen
-        String finalWoord = woord;
-        VulWoordInGui(poging, finalWoord.toLowerCase(), () -> {
-            //TODO: Maak jou eigen variant
-//            UpdateStatusText("Dit was poging " + (poging + 1));
 
-            //TODO: Ook de logica voor eind spel (heeft gebruiker gewonnen of zijn er 5 pogingen geweest)
-//             if(finalWoord == hetWoord){}
+        UpdateStatusText("Dit was poging " + (poging + 1));
+        if (IsCheat(woorden)) {
+            woorden = "-----";
+            EindSpelValsSpel();
+        }
+
+        if (woorden.length() != 5) {
+            woorden = "-----";
+        }
+
+
+        String finalWoord = woorden;
+        VulWoordInGui(poging, finalWoord.toLowerCase(), () -> {
+            if (finalWoord.equalsIgnoreCase(hetWoord)) {
+                EindSpelWin();
+            } else if (poging == 4) {
+                EindSpelGeenKansenOver();
+            }
+
         });
     }
-    
-    // Hier zit de logica dat de gui invult  
-    public void VulWoordInGui(int poging, String woord, ILambda callback){
-        for(int i = 0; i < 5; i++){
+
+    // Hier zit de logica dat de gui invult
+    public void VulWoordInGui(int poging, String woorden, ILambda callback) {
+        for (int i = 0; i < 5; i++) {
             int finalI = i;
             Timer timer = new Timer(200 * i, (l) -> {
                 JTextField txt = textFields[poging][finalI];
-                char character = woord.charAt(finalI);
-                
+                char character = woorden.charAt(finalI);
                 txt.setText(character + "");
-
                 Color kleur = GetKleurVanLetter(finalI, character);
                 txt.setBackground(kleur);
 
-                if(kleur == ColorGoed){
+                if (kleur == ColorGoed) {
                     PlaySound(SoundGoed);
-                }else if(kleur == ColorHalf){
+                } else if (kleur == ColorHalf) {
                     PlaySound(SoundHalf);
-                }else{
+                } else {
                     PlaySound(SoundFout);
                 }
+
+
             });
             timer.setRepeats(false);
             timer.start();
@@ -171,7 +185,7 @@ public class HHSLingo {
     }
 
     // Kijk of er alleen maar dezelfde letter in zitten, een hele simpele anti-cheat
-    public boolean IsCheat(String input){
+    public boolean IsCheat(String input) {
         char start = input.charAt(0);
         int teller = 0;
 
@@ -183,50 +197,58 @@ public class HHSLingo {
 
         return teller == input.length();
     }
-    
+
     // Verkrijg de bijbehoorende kleur van de opgegeven letter
     // Rood - Fout
     // Geel - Fout maar de letter zit wel in het woord
     // Groen - Goed
-    public Color GetKleurVanLetter(int index, char input){
+    public Color GetKleurVanLetter(int index, char input) {
         char charWoord = hetWoord.charAt(index);
-        
+        if (charWoord == input) {
+            return ColorGoed;
+        } else if (hetWoord.contains(input + "")) {
+            return ColorHalf;
+        }
         //TODO: Check of de ingegeven character hetzelfde is van het woord (ook van de index)
         // Als dat niet zo is, kijk of de character wel in het woord zit !!
         //      hint: gebruik hetWoord.contains en maak de char een string met + "" (input + "")
-
         // Gebruik de values ColorGoed, ColorHalf, ColorFout
-
         return ColorFout;
     }
 
     // Als er vals gespeelt wordt, wat moet er gedaan worden
-    public void EindSpelValsSpel(){ 
+    public void EindSpelValsSpel() {
+        new Thread(() -> PlaySound(SoundCheat)).start();
+        UpdateStatusText("CHEATER!");
         //TODO: spel uitschakelen, gameover muziekje afspelen (kijk bij geenkansover)
-        // isSpelActief = false
+        isSpelActief = false;
     }
 
     // Als de speler gewonnen heeft
-    public void EindSpelWin(){
+    public void EindSpelWin() {
         //TODO: spel uitschakelen, overwinning muziekje afspelen (kijk bij geenkansover)
+        new Thread(() -> PlaySound(SoundGewonnen)).start();
+        UpdateStatusText("GEWONNEN!");
+        isSpelActief = false;
 
     }
-    
+
     // Als de speler geen kansen meer heeft
-    public void EindSpelGeenKansenOver(){
+    public void EindSpelGeenKansenOver() {
         //TODO: spel uitschakelen, gameover muziekje afspelen
-
+        UpdateStatusText("HELAAS! U HEEFT VERLOREN!");
         new Thread(() -> PlaySound(SoundGameover)).start();
+        isSpelActief = false;
     }
-    
+
     // Gui element, update status textbox
-    public void UpdateStatusText(String status){
+    public void UpdateStatusText(String status) {
         lGui.getTxtStatus().setText(status);
     }
 
-
-    /** Ja dit is van het internet gehaald */
-
+    /**
+     * Ja dit is van het internet gehaald
+     */
     // size of the byte buffer used to read/write the audio stream
     private static final int BUFFER_SIZE = 4096;
 
@@ -244,7 +266,6 @@ public class HHSLingo {
             audioLine.start();
 
 //            System.out.println("Playback started.");
-
             byte[] bytesBuffer = new byte[BUFFER_SIZE];
             int bytesRead = -1;
 
@@ -257,7 +278,6 @@ public class HHSLingo {
             audioStream.close();
 
 //            System.out.println("Playback completed.");
-
         } catch (UnsupportedAudioFileException ex) {
             System.out.println("The specified audio file is not supported.");
             ex.printStackTrace();
